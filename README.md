@@ -20,12 +20,86 @@ This pipeline processes videos by:
 - **Configurable Thresholds**: Adjust flow score threshold to control segment sensitivity
 - **Metadata Tracking**: Generates legend.json files with frame timestamps and processing notes
 
+## Pipeline Modes Explained
+
+The pipeline offers two distinct processing modes, each suited for different use cases:
+
+### Prefilter Mode (Recommended)
+
+**How it works:**
+1. Analyzes each video segment using optical flow to detect motion and activity
+2. Calculates a "flow score" (90th percentile of optical flow magnitudes)
+3. Only processes segments with scores above a threshold (default: 2.5)
+4. Extracts frames at 2 fps from active segments
+
+**Advantages:**
+- **Cost-effective**: Skips low-activity segments, reducing LLM API costs by 40-70% on typical videos
+- **Efficiency**: Processes only meaningful content (scene changes, motion, action)
+- **Intelligence**: Automatically filters out static shots, title cards, fade-to-black transitions
+- **Configurable**: Adjust threshold to control sensitivity
+
+**Best for:**
+- Long videos with static periods (lectures, interviews, surveillance footage)
+- Cost-conscious processing where you want to minimize LLM API calls
+- Videos where you only care about active/dynamic scenes
+- Production workflows where efficiency matters
+
+**Example results:**
+A 250-second video (25 segments at 10s each) might skip 13-15 low-activity segments, processing only 10-12 active ones.
+
+### Simple Mode
+
+**How it works:**
+1. Extracts frames uniformly at 2 fps from the entire video
+2. No analysis or filtering
+3. Processes every segment regardless of content
+
+**Advantages:**
+- **Complete coverage**: Captures every part of the video
+- **Predictable**: Always produces the same number of frames
+- **Simple**: No configuration needed, no threshold tuning
+- **Guaranteed**: Never misses content due to low motion
+
+**Best for:**
+- Short videos where every frame matters
+- Content with subtle changes (slow animations, text-heavy presentations)
+- When you need complete temporal coverage
+- Videos where static scenes contain important information (diagrams, slides)
+
+**Example results:**
+A 250-second video always produces 500 frames (2 fps) across all 25 segments.
+
+### Mode Comparison Table
+
+| Feature | Prefilter Mode | Simple Mode |
+|---------|---------------|-------------|
+| **Processing** | Selective (activity-based) | Complete (all frames) |
+| **Cost** | Lower (skips 40-70% typically) | Higher (processes everything) |
+| **Setup** | Requires threshold tuning | No configuration |
+| **Coverage** | Active scenes only | Full video |
+| **Best Use** | Long videos, efficiency | Short videos, completeness |
+| **Frame Count** | Variable (depends on activity) | Fixed (2 fps throughout) |
+
+### Choosing the Right Mode
+
+**Use Prefilter mode (`--mode prefilter`) when:**
+- Processing long-form content (>5 minutes)
+- Video has known static periods
+- Reducing costs is important
+- You only care about active/dynamic content
+
+**Use Simple mode (`--mode simple`) when:**
+- Processing short clips (<2 minutes)
+- Every second matters for analysis
+- Video contains important static content
+- You want predictable, uniform sampling
+
 ## Installation
 
 1. Clone the repository:
 ```bash
-git clone <your-repo-url>
-cd video_pipeline
+git clone https://github.com/Alhassan777/TUV_videopipeline.git
+cd TUV_videopipeline
 ```
 
 2. Install dependencies:
